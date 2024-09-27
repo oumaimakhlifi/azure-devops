@@ -1,0 +1,34 @@
+# dotnetproject pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+- main  # Déclenchement sur des commits vers la branche principale
+
+pool: myUbuntuAgentPool  # Utilise un pool d'agents Ubuntu configuré
+
+variables:
+  REGISTRY_USER: $(REGISTRY_USER)  # Utilise la variable d'environnement pour le nom d'utilisateur du registre Docker
+  REGISTRY_PASS: $(REGISTRY_PASS)  # Utilise la variable d'environnement pour le mot de passe du registre Docker
+
+steps:
+- script: |
+    echo "$REGISTRY_PASS" | docker login -u "$REGISTRY_USER" --password-stdin || { echo "Docker login failed"; exit 1; }  # Connexion au registre Docker
+  displayName: 'Docker Login'
+
+- script: |
+    echo "Building Docker image..."
+    docker build -t $REGISTRY_USER/dotnetproject:latest -f 03-app-dotnet/Dockerfile 03-app-dotnet || { echo "Build failed"; exit 1; }
+  displayName: 'Build Docker Image'
+
+- script: |
+    echo "Pushing Docker image..."
+    docker push $REGISTRY_USER/dotnetproject:latest || { echo "Push failed"; exit 1; }
+  displayName: 'Push Docker Image'
+
+- script: |
+    echo "Deploying application..."
+    docker pull $REGISTRY_USER/dotnetproject:latest || { echo "Pull failed"; exit 1; }
+    docker run -d -p 3000:80 $REGISTRY_USER/dotnetproject:latest || { echo "Run failed"; exit 1; }
+  displayName: 'Deploy Application'
