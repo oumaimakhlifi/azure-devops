@@ -4,9 +4,9 @@
 # https://aka.ms/yaml
 
 trigger:
-- main  # Déclenchement sur des commits vers la branche principale
+- main  # Trigger on commits to the main branch
 
-pool: myUbuntuAgentPool  # Utilise un pool d'agents Ubuntu configuré
+pool: myUbuntuAgentPool  # Use a configured Ubuntu agent pool
 
 steps:
 - script: |
@@ -15,17 +15,11 @@ steps:
   displayName: 'Docker Login'
 
 - script: |
-    echo "Building Docker image..."
-    docker build -t $(REGISTRY_USER)/dotnetproject:latest -f 03-app-dotnet/Dockerfile 03-app-dotnet || { echo "Build failed"; exit 1; }
-  displayName: 'Build Docker Image'
-
-- script: |
-    echo "Pushing Docker image..."
-    docker push $(REGISTRY_USER)/dotnetproject:latest || { echo "Push failed"; exit 1; }
-  displayName: 'Push Docker Image'
+    echo "Pulling Docker image..."
+    docker pull $(REGISTRY_USER)/dotnetproject:latest || { echo "Pull failed"; exit 1; }
+  displayName: 'Pull Docker Image'
 
 - script: |
     echo "Deploying application..."
-    docker pull $(REGISTRY_USER)/dotnetproject:latest || { echo "Pull failed"; exit 1; }
     docker run -d -p 3001:80 $(REGISTRY_USER)/dotnetproject:latest || { echo "Run failed"; exit 1; }
   displayName: 'Deploy Application'
