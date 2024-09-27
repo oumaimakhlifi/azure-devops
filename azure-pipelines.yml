@@ -1,8 +1,4 @@
 # dotnetproject pipeline
-# Start with a minimal pipeline that you can customize to build and deploy your code.
-# Add steps that build, run tests, deploy, and more:
-# https://aka.ms/yaml
-
 trigger:
 - main  # Déclenchement sur des commits vers la branche principale
 
@@ -23,12 +19,14 @@ jobs:
     displayName: 'Build Docker Image'
 
   - script: |
+      echo "Waiting before pushing the Docker image..."
+      sleep 10  # Attendre 10 secondes
       echo "Pushing Docker image..."
-      docker push oumaimakhelifi/dotnetproject:latest || { echo "Push failed"; exit 1; }
+      docker push oumaimakhelifi/dotnetproject22:latest || { echo "Push failed"; exit 1; }
     displayName: 'Push Docker Image'
 
   - script: |
       echo "Deploying application..."
-      docker pull oumaimakhelifi/dotnetproject:latest || { echo "Pull failed"; exit 1; }
-      docker run -d -p 3003:80 oumaimakhelifi/dotnetproject:latest || { echo "Run failed"; exit 1; }
+      docker pull oumaimakhelifi/dotnetproject22:latest || { echo "Pull failed"; exit 1; }
+      docker run -d -p 3003:80 oumaimakhelifi/dotnetproject22:latest || { echo "Run failed"; exit 1; }
     displayName: 'Deploy Application'
