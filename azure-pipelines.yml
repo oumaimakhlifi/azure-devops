@@ -8,24 +8,27 @@ trigger:
 
 pool: myUbuntuAgentPool  # Utilise un pool d'agents Ubuntu configuré
 
-steps:
-- script: |
-    echo "Logging in to Docker registry..."
-    echo "$(REGISTRY_PASS)" | docker login -u "oumaimakhelifi" --password-stdin || { echo "Docker login failed"; exit 1; }
-  displayName: 'Docker Login'
+jobs:
+- job: BuildAndDeploy
+  timeoutInMinutes: 120  # Définit le timeout à 120 minutes
+  steps:
+  - script: |
+      echo "Logging in to Docker registry..."
+      echo "$(REGISTRY_PASS)" | docker login -u "oumaimakhelifi" --password-stdin || { echo "Docker login failed"; exit 1; }
+    displayName: 'Docker Login'
 
-- script: |
-    echo "Building Docker image..."
-    docker build -t oumaimakhelifi/dotnetproject:latest -f 03-app-dotnet/Dockerfile 03-app-dotnet || { echo "Build failed"; exit 1; }
-  displayName: 'Build Docker Image'
+  - script: |
+      echo "Building Docker image..."
+      docker build -t oumaimakhelifi/dotnetproject:latest -f 03-app-dotnet/Dockerfile 03-app-dotnet || { echo "Build failed"; exit 1; }
+    displayName: 'Build Docker Image'
 
-- script: |
-    echo "Pushing Docker image..."
-    docker push oumaimakhelifi/dotnetproject:latest || { echo "Push failed"; exit 1; }
-  displayName: 'Push Docker Image'
+  - script: |
+      echo "Pushing Docker image..."
+      docker push oumaimakhelifi/dotnetproject:latest || { echo "Push failed"; exit 1; }
+    displayName: 'Push Docker Image'
 
-- script: |
-    echo "Deploying application..."
-    docker pull oumaimakhelifi/dotnetproject:latest || { echo "Pull failed"; exit 1; }
-    docker run -d -p 3001:80 $(REGISTRY_USER)/dotnetproject:latest || { echo "Run failed"; exit 1; }
-  displayName: 'Deploy Application' 
+  - script: |
+      echo "Deploying application..."
+      docker pull oumaimakhelifi/dotnetproject:latest || { echo "Pull failed"; exit 1; }
+      docker run -d -p 3001:80 oumaimakhelifi/dotnetproject:latest || { echo "Run failed"; exit 1; }
+    displayName: 'Deploy Application'
