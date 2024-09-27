@@ -8,13 +8,10 @@ trigger:
 
 pool: myUbuntuAgentPool  # Utilise un pool d'agents Ubuntu configuré
 
-variables:
-  REGISTRY_USER: $(REGISTRY_USER)  # Utilise la variable d'environnement pour le nom d'utilisateur du registre Docker
-  REGISTRY_PASS: $(REGISTRY_PASS)  # Utilise la variable d'environnement pour le mot de passe du registre Docker
-
 steps:
 - script: |
-    echo "$REGISTRY_PASS" | docker login -u "$REGISTRY_USER" --password-stdin || { echo "Docker login failed"; exit 1; }  # Connexion au registre Docker
+    echo "Logging in to Docker registry..."
+    echo "$REGISTRY_PASS" | docker login -u "$REGISTRY_USER" --password-stdin || { echo "Docker login failed"; exit 1; }
   displayName: 'Docker Login'
 
 - script: |
@@ -30,5 +27,5 @@ steps:
 - script: |
     echo "Deploying application..."
     docker pull $REGISTRY_USER/dotnetproject:latest || { echo "Pull failed"; exit 1; }
-    docker run -d -p 3000:80 $REGISTRY_USER/dotnetproject:latest || { echo "Run failed"; exit 1; }
+    docker run -d -p 3001:80 $REGISTRY_USER/dotnetproject:latest || { echo "Run failed"; exit 1; }
   displayName: 'Deploy Application'
